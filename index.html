@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Japanese Buffet Dashboard v3</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap');
+:root{--bg:#0f1117;--card:#1a1d27;--card2:#222636;--border:#2a2e3d;--text:#e4e6ef;--dim:#8b8fa3;--accent:#6c63ff;--accent2:#00d4aa;--red:#ff4d6a;--orange:#ff9f43;--blue:#3b82f6;--green:#22c55e;--purple:#a855f7;--pink:#ec4899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans Thai',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.header{background:linear-gradient(135deg,#1a1d27,#252a3a);border-bottom:1px solid var(--border);padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header h1{font-size:20px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .sub{font-size:12px;color:var(--dim)}
+.nav{display:flex;gap:3px;background:var(--bg);border-radius:10px;padding:3px;flex-wrap:wrap}
+.nav button{padding:7px 14px;border:none;background:transparent;color:var(--dim);font-family:inherit;font-size:12px;font-weight:500;border-radius:7px;cursor:pointer;transition:.2s}
+.nav button:hover{color:var(--text);background:var(--card)}
+.nav button.on{background:var(--accent);color:#fff}
+.wrap{max-width:1400px;margin:0 auto;padding:20px}
+.page{display:none}.page.on{display:block}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;transition:.2s}
+.kpi:hover{background:var(--card2);transform:translateY(-2px)}
+.kpi .lb{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi .val{font-size:26px;font-weight:700}
+.kpi .s{font-size:11px;color:var(--dim);margin-top:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:16px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card h3{font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3 .i{font-size:16px}
+.full{grid-column:1/-1}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:9px 10px;border-bottom:2px solid var(--border);color:var(--dim);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:9px 10px;border-bottom:1px solid var(--border)}
+tr:hover td{background:rgba(108,99,255,.04)}
+.r{text-align:right}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.bg{background:rgba(34,197,94,.15);color:var(--green)}
+.br{background:rgba(255,77,106,.15);color:var(--red)}
+.bo{background:rgba(255,159,67,.15);color:var(--orange)}
+.bb{background:rgba(59,130,246,.15);color:var(--blue)}
+.bar-bg{background:var(--bg);border-radius:4px;height:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .8s}
+.insight{background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:12px;line-height:1.8}
+.insight h4{color:var(--accent);margin-bottom:6px;font-size:13px}
+.pkg-btns{display:flex;gap:5px;margin-bottom:14px;flex-wrap:wrap}
+.pkg-btn{padding:5px 14px;border:1px solid var(--border);background:var(--bg);color:var(--dim);font-family:inherit;font-size:12px;border-radius:7px;cursor:pointer;transition:.2s}
+.pkg-btn:hover{border-color:var(--accent);color:var(--text)}
+.pkg-btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.top-list{list-style:none}
+.top-list li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.top-list li:last-child{border-bottom:none}
+.rk{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.rk1{background:linear-gradient(135deg,#ffd700,#ffb300);color:#000}
+.rk2{background:linear-gradient(135deg,#c0c0c0,#a0a0a0);color:#000}
+.rk3{background:linear-gradient(135deg,#cd7f32,#b06820);color:#fff}
+.rk-def{background:var(--bg);color:var(--dim);border:1px solid var(--border)}
+.mi{flex:1;min-width:0}.mn{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mq{font-size:11px;color:var(--dim)}
+.mb{width:110px;flex-shrink:0}
+.section-title{font-size:13px;font-weight:600;margin:20px 0 10px;padding:8px 14px;border-radius:8px;display:inline-block}
+.st-top{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.st-bot{background:rgba(255,77,106,.1);color:var(--red);border:1px solid rgba(255,77,106,.2)}
+.scroll-x{overflow-x:auto}
+@media(max-width:768px){.grid{grid-template-columns:1fr}.wrap{padding:10px}.kpi-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><h1>Japanese Buffet Analytics Dashboard</h1><div class="sub">รายงานวิเคราะห์ต้นทุนและยอดขาย | ม.ค. 2026</div></div>
+  <div class="nav" id="nav"></div>
+</div>
+<div class="wrap">
+
+<div class="page on" id="p-overview">
+  <div class="kpi-row" id="kpis"></div>
+  <div class="grid">
+    <div class="card"><h3><span class="i">📊</span> รายได้ vs ต้นทุน vs กำไร</h3><canvas id="c1"></canvas></div>
+    <div class="card"><h3><span class="i">📈</span> %Cost vs GP% แต่ละแพคเกจ</h3><canvas id="c2"></canvas></div>
+    <div class="card full"><h3><span class="i">📅</span> ยอดขายรายวัน (Stacked)</h3><canvas id="c3" height="90"></canvas></div>
+  </div>
+</div>
+
+<div class="page" id="p-packages">
+  <div class="grid">
+    <div class="card full"><h3><span class="i">🎯</span> เปรียบเทียบแพคเกจทุกมิติ</h3><div class="scroll-x"><table id="t1"></table></div></div>
+    <div class="card"><h3><span class="i">💰</span> สัดส่วนรายได้</h3><canvas id="c4"></canvas></div>
+    <div class="card"><h3><span class="i">💵</span> กำไรขั้นต้น (฿) แต่ละแพค</h3><canvas id="c5"></canvas></div>
+    <div class="card full"><h3><span class="i">📊</span> โครงสร้างรายได้: ต้นทุน vs กำไร</h3><canvas id="c6" height="80"></canvas></div>
+  </div>
+</div>
+
+<div class="page" id="p-menus">
+  <div class="card">
+    <h3><span class="i">🍣</span> เมนูหลักยอดนิยม & เมนูที่คนสั่งน้อยที่สุด แต่ละแพคเกจ</h3>
+    <p style="font-size:11px;color:var(--dim);margin-bottom:10px">* ไม่รวมเครื่องเคียง ผัก ข้าว ขนม เครื่องดื่ม ซอส และวัตถุดิบเสริม</p>
+    <div class="pkg-btns" id="mb"></div>
+    <div id="ml"></div>
+  </div>
+</div>
+
+<div class="page" id="p-payments">
+  <div class="grid">
+    <div class="card"><h3><span class="i">💳</span> สัดส่วนจำนวนบิลแต่ละช่องทาง</h3><canvas id="c7"></canvas></div>
+    <div class="card"><h3><span class="i">💵</span> รายได้แต่ละช่องทาง</h3><canvas id="c8"></canvas></div>
+    <div class="card full"><h3><span class="i">📋</span> รายละเอียดช่องทางชำระเงิน</h3><div class="scroll-x"><table id="t2"></table></div></div>
+  </div>
+</div>
+
+<div class="page" id="p-anomaly">
+  <div class="insight"><h4>เกณฑ์ตรวจจับบิลผิดปกติ</h4>
+    <p>1. <strong>สั่งเยอะผิดปกติ</strong> — มากกว่า 25 จาน/คน (ปกติ ~10-15)<br>
+    2. <strong>ต้นทุนสูงเกิน</strong> — ต้นทุน > 90% ของรายได้</p>
+  </div>
+  <div class="card"><h3><span class="i">⚠️</span> บิลที่น่าสงสัย</h3><div class="scroll-x"><table id="t3"></table></div></div>
+</div>
+
+<div class="page" id="p-costcheck">
+  <div class="insight" id="ci"></div>
+  <div class="grid">
+    <div class="card full"><h3><span class="i">🔍</span> รายละเอียดต้นทุนแต่ละแพค</h3><div class="pkg-btns" id="cb"></div><div class="scroll-x"><table id="t4"></table></div></div>
+    <div class="card"><h3><span class="i">📊</span> ต้นทุนเฉลี่ย vs สูงสุด ต่อเมนู</h3><canvas id="c9"></canvas></div>
+    <div class="card"><h3><span class="i">🔴</span> ราคาแพค vs ต้นทุน/คน</h3><canvas id="c10"></canvas></div>
+  </div>
+</div>
+
+</div>
+<script>
+const D = {"gp_data": {"599": {"revenue": 67258.0, "cost": 25997.27, "gp_pct": 61.3, "bills": 41, "guests": 99}, "799": {"revenue": 844459.4, "cost": 474920.03, "gp_pct": 43.8, "bills": 326, "guests": 941}, "1199": {"revenue": 973283.85, "cost": 467275.78, "gp_pct": 52.0, "bills": 223, "guests": 728}, "1599": {"revenue": 1286458.4, "cost": 686522.73, "gp_pct": 46.6, "bills": 253, "guests": 736}, "2199": {"revenue": 1659382.8, "cost": 1321750.9, "gp_pct": 20.3, "bills": 236, "guests": 668}}, "top_menus": {"599": [{"menu": "ซูชิ แซลมอน", "qty": 104}, {"menu": "กุ้งขาว", "qty": 52}, {"menu": "ซูซิ แซลมอนไซเกียว", "qty": 49}, {"menu": "ซูชิ แซลมอนย่างไฟ", "qty": 44}, {"menu": "หอยเชลล์เล็ก", "qty": 44}, {"menu": "หมึกกล้วย", "qty": 40}, {"menu": "เมซากุชิกเก้นวิง", "qty": 36}, {"menu": "ซาชิมิ ปลาซาบะ 2", "qty": 35}, {"menu": "กุ้งเทมปุระ", "qty": 35}, {"menu": "ซาชิมิ ปูอัด", "qty": 31}, {"menu": "ซูซิ ลิ้นวัวย่างไฟ", "qty": 30}, {"menu": "มากิ แซลมอนสไปซี่ลาวา", "qty": 22}, {"menu": "สติ๊กกุ้ง", "qty": 22}, {"menu": "ซูซิ กุ้งหวาน", "qty": 20}, {"menu": "เมซากุแฮมเบิร์ก", "qty": 20}], "799": [{"menu": "ซาชิมิ แซลมอน 1", "qty": 1215}, {"menu": "กุ้งแม่น้ำผ่าเนย (สำหรับย่าง)", "qty": 698}, {"menu": "Tongue Slices (12)", "qty": 540}, {"menu": "แซลมอนดอง", "qty": 390}, {"menu": "แซลมอนครีมชีส แฮนด์โรล", "qty": 346}, {"menu": "กุ้งดอง", "qty": 309}, {"menu": "ซูชิ กุ้งโบตั๋น", "qty": 306}, {"menu": "กุ้งแม่น้ำผ่าสไปซี่ชีส (สำหรับย่าง)", "qty": 297}, {"menu": "ซาซิมิ ทูน่า 3", "qty": 291}, {"menu": "ยำแซลมอน", "qty": 256}, {"menu": "หอยเชลล์เล็ก ชีส", "qty": 250}, {"menu": "แซลมอน แฮนด์โรล", "qty": 234}, {"menu": "ซาชิมิ หมึกกระดอง", "qty": 221}, {"menu": "ยุกเกะเนื้อคารูบิ", "qty": 212}, {"menu": "Yakiniku Sashimi Set", "qty": 201}], "1199": [{"menu": "กุ้งแม่น้ำย่างเนย (ย่างให้)", "qty": 543}, {"menu": "ซาชิมิ แซลมอน 1", "qty": 420}, {"menu": "เอ็นกาวะอากามิอูนิ", "qty": 383}, {"menu": "กุ้งแม่น้ำย่างชีส (ย่างให้)", "qty": 306}, {"menu": "Tongue Slices (12)", "qty": 272}, {"menu": "ซาชิมิ โฮตาเตะ 5", "qty": 272}, {"menu": "ปลาไหลย่างไฟ (ครึ่งตัว)", "qty": 271}, {"menu": "หอยนางรมสดซีฟู้ด", "qty": 257}, {"menu": "ซูซิ ไข่แซลมอน", "qty": 233}, {"menu": "โฮตาเตะ แฮนด์โรล", "qty": 231}, {"menu": "แซลมอนทรัฟเฟิลออย สามกษัตริย์", "qty": 227}, {"menu": "เมซากุ โฮตาเตะ", "qty": 224}, {"menu": "ซาชิมิ กุ้งโบตั๋น", "qty": 209}, {"menu": "ซาชิมิ เอนกาวะ 9", "qty": 199}, {"menu": "Premium Sashimi Set", "qty": 182}], "1599": [{"menu": "ฟัวกราส์ แฮนด์โรล", "qty": 554}, {"menu": "อูนิ แฮนด์โรล", "qty": 494}, {"menu": "อูนิ กุงกัน", "qty": 484}, {"menu": "กุ้งแม่น้ำย่างเนย (ย่างให้)", "qty": 345}, {"menu": "อิกุระช็อต", "qty": 341}, {"menu": "ลิ้นบุปผาซูวี", "qty": 287}, {"menu": "ซาชิมิ แซลมอน 1", "qty": 244}, {"menu": "ซูซิวากิว A5 ท็อปฟรัวกราส์", "qty": 221}, {"menu": "หอยนางรมสดซีฟู้ด", "qty": 206}, {"menu": "Botan Yuzu", "qty": 201}, {"menu": "เอ็นกาวะอากามิอูนิ", "qty": 187}, {"menu": "ซาชิมิ โฮตาเตะ 5", "qty": 184}, {"menu": "เมซากุ โฮตาเตะ", "qty": 180}, {"menu": "กุ้งแม่น้ำย่างชีส (ย่างให้)", "qty": 177}, {"menu": "กุ้งลายเสือ", "qty": 175}], "2199": [{"menu": "ซาชิมิ ขาปูทาราบะ", "qty": 1340}, {"menu": "ซาชิมิ ก้ามปูซูไว", "qty": 1081}, {"menu": "จุนไซบัวหิมะ (เสิร์ฟ 2199)", "qty": 631}, {"menu": "Japanese 10Sec Zabuton", "qty": 583}, {"menu": "A5 Zabuton", "qty": 324}, {"menu": "อูนิ แฮนด์โรล", "qty": 287}, {"menu": "สเต็กวากิวญี่ปุ่น ฟัวกราส์", "qty": 286}, {"menu": "ซาชิมิ ชูโทโร่", "qty": 274}, {"menu": "กุ้งแม่น้ำย่างเนย (ย่างให้)", "qty": 251}, {"menu": "อูนิ กุงกัน", "qty": 244}, {"menu": "ซูชิจัมโบ้วากิว A5 ท็อปฟรัวกราส์", "qty": 225}, {"menu": "ซาชิมิ หอยเป่าฮื้อ", "qty": 224}, {"menu": "Premium Meisaku Beef Set", "qty": 219}, {"menu": "อิกุระช็อต", "qty": 216}, {"menu": "ปลาหิมะต้มซีอิ๊วญี่ปุ่น", "qty": 206}]}, "payment_data": [{"type": "VISA", "count": 375, "revenue": 1822437.25}, {"type": "QRCode", "count": 294, "revenue": 1109646.5}, {"type": "Master Card", "count": 215, "revenue": 1026917.45}, {"type": "PromptPay", "count": 64, "revenue": 208499.1}, {"type": "Cash", "count": 56, "revenue": 271451.4}, {"type": "Grab", "count": 34, "revenue": 141019.0}, {"type": "JCB", "count": 28, "revenue": 144670.75}, {"type": "Hungry hub (จ่ายแล้ว)", "count": 4, "revenue": 17518.0}, {"type": "hungry (visa)", "count": 3, "revenue": 14114.0}, {"type": "Split Amount", "count": 2, "revenue": 61865.0}, {"type": "Hungry (MC)", "count": 2, "revenue": 3764.0}, {"type": "UnionPay", "count": 1, "revenue": 3764.0}, {"type": "hungry (พร้อมเพย์)", "count": 1, "revenue": 5176.0}], "cost_analysis": {"599": {"avg_cost": 9.2, "max_cost": 39.74, "max_menu": "Aus Chuck Eyeroll (15)", "min_cost": 0.49, "total_items": 71, "flagged": []}, "799": {"avg_cost": 19.78, "max_cost": 90.75, "max_menu": "กุ้งแม่น้ำ", "min_cost": 4.18, "total_items": 64, "flagged": []}, "1199": {"avg_cost": 29.97, "max_cost": 151.52, "max_menu": "Premium Sashimi Set", "min_cost": 4.79, "total_items": 58, "flagged": []}, "1599": {"avg_cost": 39.46, "max_cost": 188.51, "max_menu": "Meisaku Sashimi Set", "min_cost": 1.74, "total_items": 45, "flagged": []}, "2199": {"avg_cost": 75.46, "max_cost": 380.85, "max_menu": "Premium Meisaku Sashimi Set", "min_cost": 3.46, "total_items": 44, "flagged": [{"menu": "Premium Meisaku Sashimi Set", "cost": 380.85, "pct_of_pkg": 17.3}, {"menu": "ซาชิมิ ขาปูทาราบะ", "cost": 374.0, "pct_of_pkg": 17.0}]}}, "suspicious_bills": [{"receipt": "20TFE", "date": "03/01/2026", "package": "2199", "guests": 1, "items": 179, "items_per_guest": 179.0, "revenue": 0, "cost": 9885.34, "reason": "สั่งเยอะผิดปกติ (179.0 จาน/คน)"}, {"receipt": "58HKD", "date": "31/01/2026", "package": "2199", "guests": 1, "items": 126, "items_per_guest": 126.0, "revenue": 0, "cost": 5855.73, "reason": "สั่งเยอะผิดปกติ (126.0 จาน/คน)"}, {"receipt": "6DCEA", "date": "26/01/2026", "package": "799", "guests": 1, "items": 93, "items_per_guest": 93.0, "revenue": 941.0, "cost": 1349.89, "reason": "สั่งเยอะผิดปกติ (93.0 จาน/คน)"}, {"receipt": "6DCEA", "date": "26/01/2026", "package": "799", "guests": 1, "items": 93, "items_per_guest": 93.0, "revenue": 941.0, "cost": 1349.89, "reason": "ต้นทุนสูงมาก (143.5% ของรายได้)"}, {"receipt": "9DBY3", "date": "24/01/2026", "package": "799", "guests": 1, "items": 91, "items_per_guest": 91.0, "revenue": 941.0, "cost": 1958.1, "reason": "สั่งเยอะผิดปกติ (91.0 จาน/คน)"}, {"receipt": "9DBY3", "date": "24/01/2026", "package": "799", "guests": 1, "items": 91, "items_per_guest": 91.0, "revenue": 941.0, "cost": 1958.1, "reason": "ต้นทุนสูงมาก (208.1% ของรายได้)"}, {"receipt": "HE2KD", "date": "20/01/2026", "package": "799", "guests": 1, "items": 60, "items_per_guest": 60.0, "revenue": 941.0, "cost": 1150.97, "reason": "สั่งเยอะผิดปกติ (60.0 จาน/คน)"}, {"receipt": "HE2KD", "date": "20/01/2026", "package": "799", "guests": 1, "items": 60, "items_per_guest": 60.0, "revenue": 941.0, "cost": 1150.97, "reason": "ต้นทุนสูงมาก (122.3% ของรายได้)"}, {"receipt": "E6E9S", "date": "08/01/2026", "package": "1599", "guests": 2, "items": 117, "items_per_guest": 58.5, "revenue": 3764.0, "cost": 3023.0, "reason": "สั่งเยอะผิดปกติ (58.5 จาน/คน)"}, {"receipt": "QE4UT", "date": "18/01/2026", "package": "1199", "guests": 2, "items": 108, "items_per_guest": 54.0, "revenue": 2822.0, "cost": 3413.98, "reason": "สั่งเยอะผิดปกติ (54.0 จาน/คน)"}, {"receipt": "QE4UT", "date": "18/01/2026", "package": "1199", "guests": 2, "items": 108, "items_per_guest": 54.0, "revenue": 2822.0, "cost": 3413.98, "reason": "ต้นทุนสูงมาก (121.0% ของรายได้)"}, {"receipt": "JHW00", "date": "20/01/2026", "package": "2199", "guests": 2, "items": 107, "items_per_guest": 53.5, "revenue": 5176.0, "cost": 8498.15, "reason": "สั่งเยอะผิดปกติ (53.5 จาน/คน)"}, {"receipt": "JHW00", "date": "20/01/2026", "package": "2199", "guests": 2, "items": 107, "items_per_guest": 53.5, "revenue": 5176.0, "cost": 8498.15, "reason": "ต้นทุนสูงมาก (164.2% ของรายได้)"}, {"receipt": "C8MH6", "date": "04/01/2026", "package": "2199", "guests": 2, "items": 104, "items_per_guest": 52.0, "revenue": 5176.0, "cost": 9330.24, "reason": "สั่งเยอะผิดปกติ (52.0 จาน/คน)"}, {"receipt": "C8MH6", "date": "04/01/2026", "package": "2199", "guests": 2, "items": 104, "items_per_guest": 52.0, "revenue": 5176.0, "cost": 9330.24, "reason": "ต้นทุนสูงมาก (180.3% ของรายได้)"}, {"receipt": "ID0IB", "date": "01/01/2026", "package": "2199", "guests": 4, "items": 207, "items_per_guest": 51.8, "revenue": 10352.0, "cost": 12154.95, "reason": "สั่งเยอะผิดปกติ (51.8 จาน/คน)"}, {"receipt": "ID0IB", "date": "01/01/2026", "package": "2199", "guests": 4, "items": 207, "items_per_guest": 51.8, "revenue": 10352.0, "cost": 12154.95, "reason": "ต้นทุนสูงมาก (117.4% ของรายได้)"}, {"receipt": "M6AEB", "date": "02/01/2026", "package": "2199", "guests": 2, "items": 102, "items_per_guest": 51.0, "revenue": 5176.0, "cost": 7007.92, "reason": "สั่งเยอะผิดปกติ (51.0 จาน/คน)"}, {"receipt": "M6AEB", "date": "02/01/2026", "package": "2199", "guests": 2, "items": 102, "items_per_guest": 51.0, "revenue": 5176.0, "cost": 7007.92, "reason": "ต้นทุนสูงมาก (135.4% ของรายได้)"}, {"receipt": "BYR93", "date": "09/01/2026", "package": "2199", "guests": 1, "items": 51, "items_per_guest": 51.0, "revenue": 2588.0, "cost": 3318.83, "reason": "สั่งเยอะผิดปกติ (51.0 จาน/คน)"}], "daily_revenue": [{"date": "01/01/2026", "599": 0, "799": 49520.2, "1199": 34322.1, "1599": 56460.0, "2199": 111284.0}, {"date": "02/01/2026", "599": 0, "799": 32699.75, "1199": 36262.7, "1599": 30112.0, "2199": 121636.0}, {"date": "03/01/2026", "599": 4230.0, "799": 31053.0, "1199": 58295.0, "1599": 77057.2, "2199": 122444.2}, {"date": "04/01/2026", "599": 1410.0, "799": 37781.65, "1199": 78630.0, "1599": 71966.0, "2199": 46584.0}, {"date": "05/01/2026", "599": 1763.0, "799": 18725.9, "1199": 44227.0, "1599": 19639.0, "2199": 48654.4}, {"date": "06/01/2026", "599": 1410.0, "799": 14374.0, "1199": 39508.0, "1599": 24466.0, "2199": 30538.4}, {"date": "07/01/2026", "599": 4023.0, "799": 23724.0, "1199": 42330.0, "1599": 45564.0, "2199": 38820.0}, {"date": "08/01/2026", "599": 1410.0, "799": 30112.0, "1199": 22733.8, "1599": 39918.0, "2199": 39020.0}, {"date": "09/01/2026", "599": 2820.0, "799": 23374.0, "1199": 32311.9, "1599": 35758.0, "2199": 42702.0}, {"date": "10/01/2026", "599": 1659.0, "799": 36700.0, "1199": 59361.0, "1599": 39621.0, "2199": 72205.2}, {"date": "11/01/2026", "599": 7755.0, "799": 44606.0, "1199": 30900.9, "1599": 58722.0, "2199": 41408.0}, {"date": "12/01/2026", "599": 0, "799": 10351.0, "1199": 0, "1599": 33102.7, "2199": 54229.2}, {"date": "13/01/2026", "599": 3525.0, "799": 9410.0, "1199": 23987.0, "1599": 24277.8, "2199": 38820.0}, {"date": "14/01/2026", "599": 846.0, "799": 12432.0, "1199": 31042.0, "1599": 24376.8, "2199": 57236.0}, {"date": "15/01/2026", "599": 1410.0, "799": 14115.0, "1199": 18343.0, "1599": 39720.0, "2199": 33644.0}, {"date": "16/01/2026", "599": 2820.0, "799": 30017.9, "1199": 8764.0, "1599": 73511.7, "2199": 36232.0}, {"date": "17/01/2026", "599": 0, "799": 35760.0, "1199": 40777.9, "1599": 67761.8, "2199": 82557.2}, {"date": "18/01/2026", "599": 2820.0, "799": 37545.9, "1199": 40714.3, "1599": 28339.0, "2199": 108696.0}, {"date": "19/01/2026", "599": 1763.0, "799": 22240.0, "1199": 12346.25, "1599": 19720.0, "2199": 21998.0}, {"date": "20/01/2026", "599": 0, "799": 6315.5, "1199": 17379.0, "1599": 37780.0, "2199": 31056.0}, {"date": "21/01/2026", "599": 1410.0, "799": 29171.0, "1199": 24576.7, "1599": 42156.8, "2199": 23292.0}, {"date": "22/01/2026", "599": 1410.0, "799": 15256.0, "1199": 17231.0, "1599": 33786.8, "2199": 23292.0}, {"date": "23/01/2026", "599": 2919.0, "799": 32277.65, "1199": 35980.5, "1599": 17037.0, "2199": 15528.0}, {"date": "24/01/2026", "599": 1410.0, "799": 52696.0, "1199": 38802.0, "1599": 57378.0, "2199": 95497.2}, {"date": "25/01/2026", "599": 2820.0, "799": 15997.0, "1199": 47408.0, "1599": 61264.0, "2199": 83266.0}, {"date": "26/01/2026", "599": 1410.0, "799": 18820.0, "1199": 5502.9, "1599": 28560.8, "2199": 72464.0}, {"date": "27/01/2026", "599": 0, "799": 32664.95, "1199": 14110.0, "1599": 49625.0, "2199": 36232.0}, {"date": "28/01/2026", "599": 2820.0, "799": 41404.0, "1199": 2680.9, "1599": 32093.0, "2199": 31056.0}, {"date": "29/01/2026", "599": 0, "799": 22585.0, "1199": 29631.0, "1599": 40463.0, "2199": 31056.0}, {"date": "30/01/2026", "599": 4230.0, "799": 34817.0, "1199": 21314.0, "1599": 16938.0, "2199": 7764.0}, {"date": "31/01/2026", "599": 9165.0, "799": 27913.0, "1199": 63811.0, "1599": 59283.0, "2199": 60171.0}], "summary": {"total_revenue": 4830842.45, "total_cost": 2976466.71, "total_bills": 1079, "total_guests": 3172, "overall_gp": 38.4}, "bottom_menus": {"599": [{"menu": "แครอท", "qty": 2}, {"menu": "เฟรนช์ฟรายส์", "qty": 5}, {"menu": "ไส้กรอกไก่", "qty": 8}, {"menu": "แคนิฟอเนียร์โรล", "qty": 8}, {"menu": "หอมใหญ่", "qty": 9}, {"menu": "ซูชิ ซาบะดอง", "qty": 10}, {"menu": "ไก่คาราเกะ", "qty": 11}, {"menu": "ซาชิมิ ไข่หวาน", "qty": 12}, {"menu": "โรล แซลมอนสไปซี่ลาวา", "qty": 14}, {"menu": "โรล กุ้งเทมปุระ", "qty": 15}], "799": [{"menu": "ทูน่าอะบุริสไปซี่(รีวิว)", "qty": 1}, {"menu": "โบตั๋นยุซุ (รีวิว)", "qty": 1}, {"menu": "วากิวเซ็นโดะ(รีวิว)", "qty": 2}, {"menu": "ไส้กรอกไก่", "qty": 4}, {"menu": "อูนิแฮนด์โรล(รีวิว)", "qty": 9}, {"menu": "ไก่คาราเกะ", "qty": 15}, {"menu": "โรล แซลมอนสไปซี่ลาวา", "qty": 16}, {"menu": "ยำทูน่า", "qty": 16}, {"menu": "แครอท", "qty": 17}, {"menu": "กุ้งขาว", "qty": 21}], "1199": [{"menu": "อูนิแฮนด์โรล(รีวิว)", "qty": 1}, {"menu": "ซูซิ หอยปีกนก", "qty": 2}, {"menu": "Honey Toast (รอ30นาที) - นมฮอกไกโด x 1, - สตอเบอรี่ x 1,", "qty": 2}, {"menu": "Honey Toast (รอ30นาที) - สตอเบอรี่ x 1, - นมฮอกไกโด x 1,", "qty": 3}, {"menu": "ปลาซาบะ แฮนด์โรล", "qty": 3}, {"menu": "โบตั๋นยุซุ (รีวิว)", "qty": 3}, {"menu": "ไส้กรอกไก่", "qty": 4}, {"menu": "โรล แซลมอนสไปซี่ลาวา", "qty": 4}, {"menu": "โรล แซลมอนอิกุระ", "qty": 7}, {"menu": "แครอท", "qty": 8}], "1599": [{"menu": "โรล แซลมอนอิกุระ", "qty": 1}, {"menu": "ซูซิ หอยปีกนก", "qty": 1}, {"menu": "ซูชิ ซาบะดอง", "qty": 2}, {"menu": "โรล แซลมอนย่างไฟมันปู", "qty": 2}, {"menu": "จุนไซบัวหิมะ (เสิร์ฟ 2199)", "qty": 2}, {"menu": "ปลาซาบะ แฮนด์โรล", "qty": 2}, {"menu": "Honey Toast (รอ30นาที) - สตอเบอรี่ x 1, - นมฮอกไกโด x 1,", "qty": 3}, {"menu": "ซูซิ ลิ้นวัวย่างไฟ", "qty": 3}, {"menu": "ไส้กรอกไก่", "qty": 3}, {"menu": "โรล แซลมอนสไปซี่ลาวา", "qty": 3}], "2199": [{"menu": "ยุกเกะ แฮนด์โรล", "qty": 1}, {"menu": "ปลาซาบะ แฮนด์โรล", "qty": 2}, {"menu": "ซูซิ ฮามาจิ", "qty": 2}, {"menu": "หมูทอดทงคัตสึ", "qty": 2}, {"menu": "ไส้กรอกไก่", "qty": 2}, {"menu": "ซูชิ ซาบะดอง", "qty": 2}, {"menu": "Honey Toast (รอ30นาที) - สตอเบอรี่ x 1, - นมฮอกไกโด x 1,", "qty": 2}, {"menu": "โรล เอ็นกาวะ", "qty": 2}, {"menu": "โรล แซลมอนอิกุระ", "qty": 2}, {"menu": "กุ้งขาว", "qty": 2}]}};
+const PN={'599':'Standard 599','799':'Yakiniku 799','1199':'Premium 1199','1599':'Meisaku 1599','2199':'P.Meisaku 2199'};
+const PC={'599':'#3b82f6','799':'#22c55e','1199':'#a855f7','1599':'#ff9f43','2199':'#ff4d6a'};
+const PK=['599','799','1199','1599','2199'];
+const f=n=>n.toLocaleString('th-TH',{maximumFractionDigits:0});
+const fp=n=>n.toFixed(1)+'%';
+Chart.register(ChartDataLabels);
+Chart.defaults.set('plugins.datalabels',{display:false});
+
+// NAV
+const pages=[['overview','ภาพรวม'],['packages','แพคเกจ & GP'],['menus','Top/Bottom เมนู'],['payments','ช่องทางชำระ'],['anomaly','บิลผิดปกติ'],['costcheck','ตรวจสอบต้นทุน']];
+const nav=document.getElementById('nav');
+pages.forEach(([id,label],i)=>{const b=document.createElement('button');b.textContent=label;b.className=i===0?'on':'';b.onclick=()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));nav.querySelectorAll('button').forEach(t=>t.classList.remove('on'));document.getElementById('p-'+id).classList.add('on');b.classList.add('on');};nav.appendChild(b);});
+
+// KPIs
+const S=D.summary;const gp_amt=S.total_revenue-S.total_cost;const cost_pct=(S.total_cost/S.total_revenue*100);
+const kpis=[['รายได้รวม','฿'+f(S.total_revenue),'เฉลี่ย ฿'+f(S.total_revenue/S.total_bills)+'/บิล','var(--accent2)'],['ต้นทุนรวม','฿'+f(S.total_cost),fp(cost_pct)+' ของรายได้','var(--orange)'],['กำไรขั้นต้น (GP)','฿'+f(gp_amt),'GP% = '+S.overall_gp+'%','var(--green)'],['%Cost',fp(cost_pct),'ต้นทุน/รายได้','var(--red)'],['จำนวนบิล',f(S.total_bills),'~'+f(Math.round(S.total_bills/31))+' บิล/วัน','var(--blue)'],['ลูกค้ารวม',f(S.total_guests),(S.total_guests/S.total_bills).toFixed(1)+' คน/บิล','var(--purple)']];
+document.getElementById('kpis').innerHTML=kpis.map(([lb,val,s,c])=>`<div class="kpi"><div class="lb">${lb}</div><div class="val" style="color:${c}">${val}</div><div class="s">${s}</div></div>`).join('');
+
+// C1
+new Chart(document.getElementById('c1'),{type:'bar',data:{labels:PK.map(p=>PN[p]),datasets:[{label:'รายได้',data:PK.map(p=>D.gp_data[p].revenue),backgroundColor:'rgba(0,212,170,.7)',borderRadius:5},{label:'ต้นทุน',data:PK.map(p=>D.gp_data[p].cost),backgroundColor:'rgba(255,77,106,.5)',borderRadius:5},{label:'กำไร (GP)',data:PK.map(p=>D.gp_data[p].revenue-D.gp_data[p].cost),backgroundColor:'rgba(34,197,94,.6)',borderRadius:5}]},options:{responsive:true,plugins:{legend:{labels:{color:'#8b8fa3',usePointStyle:true}},datalabels:{display:false}},scales:{x:{ticks:{color:'#8b8fa3'},grid:{color:'rgba(42,46,61,.3)'}},y:{ticks:{color:'#8b8fa3',callback:v=>'฿'+f(v)},grid:{color:'rgba(42,46,61,.3)'}}}}});
+
+// C2
+new Chart(document.getElementById('c2'),{type:'bar',data:{labels:PK.map(p=>PN[p]),datasets:[{label:'%Cost',data:PK.map(p=>(D.gp_data[p].cost/D.gp_data[p].revenue*100)),backgroundColor:'rgba(255,77,106,.6)',borderRadius:5},{label:'GP%',data:PK.map(p=>D.gp_data[p].gp_pct),backgroundColor:'rgba(34,197,94,.6)',borderRadius:5}]},options:{responsive:true,plugins:{legend:{labels:{color:'#8b8fa3',usePointStyle:true}},datalabels:{display:true,color:'#fff',font:{size:11,weight:'bold'},formatter:v=>v.toFixed(1)+'%',anchor:'end',align:'start'}},scales:{x:{ticks:{color:'#8b8fa3'},grid:{color:'rgba(42,46,61,.3)'}},y:{max:100,ticks:{color:'#8b8fa3',callback:v=>v+'%'},grid:{color:'rgba(42,46,61,.3)'}}}}});
+
+// C3
+new Chart(document.getElementById('c3'),{type:'line',data:{labels:D.daily_revenue.map(d=>d.date),datasets:PK.map(p=>({label:PN[p],data:D.daily_revenue.map(d=>d[p]),borderColor:PC[p],backgroundColor:PC[p]+'33',fill:true,tension:.3,pointRadius:1.5}))},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#8b8fa3',usePointStyle:true,pointStyle:'circle'}},datalabels:{display:false}},scales:{x:{ticks:{color:'#8b8fa3',maxRotation:45,font:{size:10}},grid:{color:'rgba(42,46,61,.2)'}},y:{stacked:true,ticks:{color:'#8b8fa3',callback:v=>'฿'+f(v)},grid:{color:'rgba(42,46,61,.2)'}}}}});
+
+// PACKAGES
+(function(){let h='<thead><tr><th>แพคเกจ</th><th class="r">บิล</th><th class="r">ลูกค้า</th><th class="r">รายได้</th><th class="r">ต้นทุน</th><th class="r">กำไร (GP)</th><th>%Cost</th><th>GP%</th><th class="r">รายได้/คน</th><th class="r">ต้นทุน/คน</th></tr></thead><tbody>';PK.forEach(p=>{const d=D.gp_data[p],profit=d.revenue-d.cost,cp=(d.cost/d.revenue*100);const gpC=d.gp_pct>=50?'bg':d.gp_pct>=35?'bo':'br';const cpC=cp<=50?'bg':cp<=65?'bo':'br';h+=`<tr><td style="font-weight:600;color:${PC[p]}">${PN[p]}</td><td class="r">${f(d.bills)}</td><td class="r">${f(d.guests)}</td><td class="r">฿${f(d.revenue)}</td><td class="r">฿${f(d.cost)}</td><td class="r" style="color:${profit>0?'var(--green)':'var(--red)'}">฿${f(profit)}</td><td><span class="badge ${cpC}">${fp(cp)}</span></td><td><span class="badge ${gpC}">${fp(d.gp_pct)}</span></td><td class="r">฿${f(Math.round(d.revenue/Math.max(d.guests,1)))}</td><td class="r">฿${f(Math.round(d.cost/Math.max(d.guests,1)))}</td></tr>`;});h+='</tbody>';document.getElementById('t1').innerHTML=h;})();
+
+new Chart(document.getElementById('c4'),{type:'doughnut',data:{labels:PK.map(p=>PN[p]),datasets:[{data:PK.map(p=>D.gp_data[p].revenue),backgroundColor:PK.map(p=>PC[p]),borderWidth:0}]},options:{responsive:true,cutout:'55%',plugins:{legend:{position:'bottom',labels:{color:'#8b8fa3',usePointStyle:true,padding:14}},datalabels:{display:true,color:'#fff',font:{size:11,weight:'bold'},formatter:(v,ctx)=>(v/D.summary.total_revenue*100).toFixed(1)+'%'}}}});
+
+new Chart(document.getElementById('c5'),{type:'bar',data:{labels:PK.map(p=>PN[p]),datasets:[{label:'กำไรขั้นต้น (฿)',data:PK.map(p=>D.gp_data[p].revenue-D.gp_data[p].cost),backgroundColor:PK.map(p=>PC[p]+'99'),borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false},datalabels:{display:true,color:'#fff',font:{size:11,weight:'bold'},formatter:v=>'฿'+f(v),anchor:'end',align:'start'}},scales:{x:{ticks:{color:'#8b8fa3'},grid:{color:'rgba(42,46,61,.3)'}},y:{ticks:{color:'#8b8fa3',callback:v=>'฿'+f(v)},grid:{color:'rgba(42,46,61,.3)'}}}}});
+
+new Chart(document.getElementById('c6'),{type:'bar',data:{labels:PK.map(p=>PN[p]),datasets:[{label:'%Cost (ต้นทุน)',data:PK.map(p=>D.gp_data[p].cost/D.gp_data[p].revenue*100),backgroundColor:'rgba(255,77,106,.6)'},{label:'GP% (กำไร)',data:PK.map(p=>D.gp_data[p].gp_pct),backgroundColor:'rgba(34,197,94,.6)'}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{labels:{color:'#8b8fa3',usePointStyle:true}},datalabels:{display:true,color:'#fff',font:{size:12,weight:'bold'},formatter:v=>v.toFixed(1)+'%'}},scales:{x:{stacked:true,max:100,ticks:{color:'#8b8fa3',callback:v=>v+'%'},grid:{color:'rgba(42,46,61,.3)'}},y:{stacked:true,ticks:{color:'#8b8fa3'},grid:{color:'rgba(42,46,61,.3)'}}}}});
+
+// === MENUS (Top 15 + Bottom 10) ===
+(function(){
+  const ctn=document.getElementById('ml'),btns=document.getElementById('mb');
+  PK.forEach((p,i)=>{const b=document.createElement('button');b.className='pkg-btn'+(i===0?' on':'');b.textContent=PN[p];b.onclick=()=>{btns.querySelectorAll('.pkg-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');show(p);};btns.appendChild(b);});
+
+  function renderList(items, maxQty, color, startRank){
+    let h='';
+    items.forEach((it,i)=>{
+      const pct=(it.qty/maxQty*100).toFixed(0);
+      const rkClass=startRank===1?(i<3?'rk'+(i+1):'rk-def'):'rk-def';
+      h+=`<li><div class="rk ${rkClass}">${startRank+i}</div><div class="mi"><div class="mn" title="${it.menu}">${it.menu.replace(/ - .*/,'').replace(/ x 1,$/,'').replace(/ x 1$/,'')}</div><div class="mq">${f(it.qty)} จาน</div></div><div class="mb"><div class="bar-bg"><div class="bar-fill" style="width:${Math.max(pct,3)}%;background:${color}"></div></div></div></li>`;
+    });
+    return h;
+  }
+
+  function show(pkg){
+    const tops=D.top_menus[pkg]||[];
+    const bots=(D.bottom_menus&&D.bottom_menus[pkg])||[];
+    const topMax=tops.length>0?tops[0].qty:1;
+    const botMax=bots.length>0?bots[bots.length-1].qty:1;
+
+    let h='<div class="section-title st-top">▲ Top 15 เมนูยอดนิยม</div>';
+    h+='<ul class="top-list">'+renderList(tops,topMax,PC[pkg],1)+'</ul>';
+
+    if(bots.length>0){
+      h+='<div class="section-title st-bot" style="margin-top:24px">▼ 10 เมนูที่คนสั่งน้อยที่สุด</div>';
+      h+='<ul class="top-list">'+renderList(bots,botMax,'var(--red)',1)+'</ul>';
+    }
+    ctn.innerHTML=h;
+  }
+  show('599');
+})();
+
+// PAYMENTS
+const pay=D.payment_data.filter(p=>p.type&&p.type.trim());
+new Chart(document.getElementById('c7'),{type:'doughnut',data:{labels:pay.map(p=>p.type),datasets:[{data:pay.map(p=>p.count),backgroundColor:['#6c63ff','#00d4aa','#ff9f43','#3b82f6','#ff4d6a','#a855f7','#ec4899','#14b8a6','#f97316','#84cc16','#06b6d4','#e11d48','#8b5cf6'],borderWidth:0}]},options:{responsive:true,cutout:'50%',plugins:{legend:{position:'bottom',labels:{color:'#8b8fa3',usePointStyle:true,padding:10,font:{size:10}}},datalabels:{display:true,color:'#fff',font:{size:10,weight:'bold'},formatter:(v,ctx)=>{const t=pay.reduce((s,p)=>s+p.count,0);return(v/t*100)>=3?(v/t*100).toFixed(0)+'%':'';}}}}});
+
+new Chart(document.getElementById('c8'),{type:'bar',data:{labels:pay.slice(0,7).map(p=>p.type),datasets:[{data:pay.slice(0,7).map(p=>p.revenue),backgroundColor:['#6c63ff','#00d4aa','#ff9f43','#3b82f6','#ff4d6a','#a855f7','#ec4899'],borderRadius:6}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},datalabels:{display:true,color:'#fff',font:{size:10,weight:'bold'},formatter:v=>'฿'+f(v),anchor:'end',align:'start'}},scales:{x:{ticks:{color:'#8b8fa3',callback:v=>'฿'+f(v)},grid:{color:'rgba(42,46,61,.3)'}},y:{ticks:{color:'#8b8fa3'},grid:{color:'rgba(42,46,61,.3)'}}}}});
+
+(function(){const tb=pay.reduce((s,p)=>s+p.count,0);let h='<thead><tr><th>ช่องทาง</th><th class="r">จำนวนบิล</th><th class="r">สัดส่วน</th><th class="r">รายได้รวม</th><th class="r">เฉลี่ย/บิล</th><th>สัดส่วน</th></tr></thead><tbody>';pay.forEach(p=>{const pct=(p.count/tb*100).toFixed(1);h+=`<tr><td style="font-weight:500">${p.type}</td><td class="r">${f(p.count)}</td><td class="r">${pct}%</td><td class="r">฿${f(p.revenue)}</td><td class="r">฿${f(Math.round(p.revenue/p.count))}</td><td><div class="bar-bg" style="width:100px"><div class="bar-fill" style="width:${pct}%;background:var(--accent)"></div></div></td></tr>`;});document.getElementById('t2').innerHTML=h+'</tbody>';})();
+
+// ANOMALY
+(function(){const seen=new Set();const bills=D.suspicious_bills.filter(b=>{if(seen.has(b.receipt))return false;seen.add(b.receipt);return true;});let h='<thead><tr><th>เลขบิล</th><th>วันที่</th><th>แพค</th><th class="r">คน</th><th class="r">จาน</th><th class="r">จาน/คน</th><th class="r">รายได้</th><th class="r">ต้นทุน</th><th>%Cost</th><th>สาเหตุ</th></tr></thead><tbody>';bills.forEach(b=>{const cp=b.revenue>0?(b.cost/b.revenue*100).toFixed(0)+'%':'∞';const cpC=b.revenue>0&&b.cost/b.revenue>.9?'br':'bo';h+=`<tr><td style="font-weight:600;color:var(--orange)">${b.receipt}</td><td>${b.date}</td><td>${PN[b.package]||b.package}</td><td class="r">${b.guests}</td><td class="r">${f(b.items)}</td><td class="r"><span class="badge br">${b.items_per_guest}</span></td><td class="r">฿${f(b.revenue)}</td><td class="r">฿${f(b.cost)}</td><td><span class="badge ${cpC}">${cp}</span></td><td style="font-size:11px">${b.reason}</td></tr>`;});document.getElementById('t3').innerHTML=h+'</tbody>';})();
+
+// COST CHECK
+(function(){const ca=D.cost_analysis;let ins='<h4>สรุปวิเคราะห์ต้นทุนจากเชฟ</h4><p>';PK.forEach(p=>{const d=D.gp_data[p],cpct=(d.cost/d.revenue*100).toFixed(1);const cg=Math.round(d.cost/Math.max(d.guests,1));const label=parseFloat(cpct)>70?'<span style="color:var(--red)">⚠ สูงมาก</span>':parseFloat(cpct)>55?'<span style="color:var(--orange)">⚠ ค่อนข้างสูง</span>':'<span style="color:var(--green)">✓ สมเหตุสมผล</span>';ins+=`• <strong>${PN[p]}</strong>: %Cost = <strong>${cpct}%</strong> ${label} | ต้นทุน/คน ≈ ฿${f(cg)} | เฉลี่ย/เมนู ฿${ca[p].avg_cost}<br>`;});ins+='<br><span style="color:var(--red)">⚠ เมนูควรทบทวน:</span> Premium Meisaku Sashimi Set (฿380.85/จาน), ซาชิมิขาปูทาราบะ (฿374/จาน)</p>';document.getElementById('ci').innerHTML=ins;
+
+const btns=document.getElementById('cb');PK.forEach((p,i)=>{const b=document.createElement('button');b.className='pkg-btn'+(i===0?' on':'');b.textContent=PN[p];b.onclick=()=>{btns.querySelectorAll('.pkg-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');showCT(p);};btns.appendChild(b);});
+function showCT(pkg){const c=ca[pkg];let h='<thead><tr><th>เมนูต้นทุนสูง</th><th class="r">ต้นทุน/จาน</th><th class="r">% ของราคาแพค</th><th>ระดับ</th></tr></thead><tbody>';c.flagged.forEach(fl=>{const lv=fl.pct_of_pkg>15?['br','สูงมาก']:fl.pct_of_pkg>10?['bo','สูง']:['bb','ปกติ'];h+=`<tr><td>${fl.menu}</td><td class="r">฿${fl.cost.toFixed(2)}</td><td class="r">${fl.pct_of_pkg}%</td><td><span class="badge ${lv[0]}">${lv[1]}</span></td></tr>`;});if(!c.flagged.length)h+='<tr><td colspan="4" style="color:var(--green)">✓ ไม่มีเมนูที่ต้นทุนเกิน 15% ของราคาแพค</td></tr>';h+=`<tr style="border-top:2px solid var(--border)"><td colspan="4" style="color:var(--dim);font-size:11px">เฉลี่ย: ฿${c.avg_cost} | สูงสุด: ฿${c.max_cost} (${c.max_menu}) | ต่ำสุด: ฿${c.min_cost} | จำนวนเมนู: ${c.total_items}</td></tr></tbody>`;document.getElementById('t4').innerHTML=h;}showCT('599');
+
+new Chart(document.getElementById('c9'),{type:'bar',data:{labels:PK.map(p=>PN[p]),datasets:[{label:'ต้นทุนเฉลี่ย',data:PK.map(p=>ca[p].avg_cost),backgroundColor:'rgba(59,130,246,.6)',borderRadius:5},{label:'ต้นทุนสูงสุด',data:PK.map(p=>ca[p].max_cost),backgroundColor:'rgba(255,77,106,.6)',borderRadius:5}]},options:{responsive:true,plugins:{legend:{labels:{color:'#8b8fa3',usePointStyle:true}},datalabels:{display:true,color:'#fff',font:{size:10,weight:'bold'},formatter:v=>'฿'+f(v),anchor:'end',align:'start'}},scales:{x:{ticks:{color:'#8b8fa3'},grid:{color:'rgba(42,46,61,.3)'}},y:{ticks:{color:'#8b8fa3',callback:v=>'฿'+v},grid:{color:'rgba(42,46,61,.3)'}}}}});
+
+new Chart(document.getElementById('c10'),{type:'bar',data:{labels:PK.map(p=>PN[p]),datasets:[{label:'ราคาแพค/คน (รวม VAT)',data:PK.map(p=>{const pr={'599':705,'799':941,'1199':1411,'1599':1882,'2199':2588};return pr[p];}),backgroundColor:'rgba(0,212,170,.5)',borderRadius:5},{label:'ต้นทุน/คน',data:PK.map(p=>Math.round(D.gp_data[p].cost/Math.max(D.gp_data[p].guests,1))),backgroundColor:'rgba(255,77,106,.6)',borderRadius:5}]},options:{responsive:true,plugins:{legend:{labels:{color:'#8b8fa3',usePointStyle:true}},datalabels:{display:true,color:'#fff',font:{size:10,weight:'bold'},formatter:v=>'฿'+f(v),anchor:'end',align:'start'}},scales:{x:{ticks:{color:'#8b8fa3'},grid:{color:'rgba(42,46,61,.3)'}},y:{ticks:{color:'#8b8fa3',callback:v=>'฿'+f(v)},grid:{color:'rgba(42,46,61,.3)'}}}}});
+})();
+</script>
+</body>
+</html>
